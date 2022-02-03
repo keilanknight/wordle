@@ -129,6 +129,7 @@ function del() {
 
   let letter = _("ltr-" + game.currentPos);
   letter.innerText = "";
+  game.currentWord = game.currentWord.slice(0, -1);
 }
 
 function letter(char) {
