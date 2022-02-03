@@ -1,0 +1,71 @@
+body {
+  display: flex;
+  margin: 0 auto;
+  text-align: center;
+  margin-top: -10px;
+}
+
+.banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -100px;
+  margin-left: -200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 400px;
+  height: 50px;
+  min-height: 50px;
+  font-size: 2.5em;
+}
+
+.green{
+    background-color: green;
+    border: 2px solid darkgreen;
+    border-radius: 10px;
+}
+
+.orange{
+    background-color: darkorange;
+    border: 2px solid orangered;
+    border-radius: 10px;
+}
+
+.red{
+    background-color: darkred;
+    border: 2px solid maroon;
+    border-radius: 10px;
+}
+
+.wordle {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  width: 300px;
+  padding: 1em;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  vertical-align: middle;
+  margin: auto;
+  margin-top: -20px;
+}
+
+.letter {
+  height: 2em;
+  width: 2em;
+  font-size: 2em;
+  border: 1px solid white;
+  margin: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.matches {
+  background-color: darkgreen;
+}
+
+.present {
+  background-color: darkslategray;
+}
