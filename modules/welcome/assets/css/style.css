@@ -92,6 +92,18 @@ body {
   background-color: darkslategray;
 }
 
+/* Mobile style */
+@media only screen and (max-width: 600px) {
+  body {
+    margin-left: 5px;
+  }
+  button {
+    min-width: 30px;
+    padding:10px;
+    margin: 0px;
+  }
+}
+
 /* Animations */
 @keyframes fadeIn {
   0% {
