@@ -46,7 +46,7 @@ class Words extends Trongate
             elseif ($this->_letter_is_present($i))
                 $result[] = ["style" => "present", "letter" => $this->word[$i]];
             else
-                $result[] = ["letter" => $this->word[$i]];
+                $result[] = ["style" => "missing", "letter" => $this->word[$i]];
         }
 
         $this->result = $result;

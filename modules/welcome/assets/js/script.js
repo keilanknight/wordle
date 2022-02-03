@@ -49,6 +49,17 @@ function endGame() {
     });
 
   if (!game.win) showBanner("GAME OVER!");
+
+  fadeout();
+}
+
+function fadeout() {
+  let div = add("div");
+  div.classList.add("fadeout");
+
+  setTimeout(() => {
+    document.querySelector("body").appendChild(div);
+  }, 1500);
 }
 
 function showBanner(txt) {
@@ -61,11 +72,13 @@ function showBanner(txt) {
   banner.innerText = txt;
 
   /* display banner then timeout remove */
-  document.querySelector("section").appendChild(banner);
+  setTimeout(() => {
+    document.querySelector("body").appendChild(banner);
+  }, 1500);
 
   setTimeout(() => {
     _("banner").remove();
-  }, 4000);
+  }, 5000);
 }
 
 function enter() {
@@ -111,6 +124,17 @@ function updateGame(res) {
       ltr.innerText = r.letter;
       if (r.style) ltr.style = ltr.classList.add(r.style);
     }, i * 300);
+
+    /* Update the buttons */
+    setTimeout(() => {
+      if (!r.style) {
+        _(r.letter).className = "";
+        _(r.letter).classList.add("missing");
+      } else {
+        _(r.letter).className = "";
+        _(r.letter).classList.add(r.style);
+      }
+    }, 1500);
   }
 
   if (res.answer == "correct") {

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trongate</title>
+    <title>Trongate Wordle</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/dark.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>welcome_module/css/style.css">
 </head>
