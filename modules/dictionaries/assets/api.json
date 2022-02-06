@@ -1,6 +1,6 @@
 {
   "Get": {
-    "url_segments": "api/get/words",
+    "url_segments": "api/get/dictionaries",
     "request_type": "GET",
     "description": "Fetch rows from table",
     "enableParams": true,
@@ -11,7 +11,7 @@
     }
   },
   "Get By Post": {
-    "url_segments": "api/get/words",
+    "url_segments": "api/get/dictionaries",
     "request_type": "POST",
     "description": "Fetch rows from table using POST request.",
     "enableParams": true,
@@ -22,7 +22,7 @@
     }
   },
   "Find One": {
-    "url_segments": "api/get/words/{id}",
+    "url_segments": "api/get/dictionaries/{id}",
     "request_type": "GET",
     "description": "Fetch one row",
     "required_fields": [
@@ -33,7 +33,7 @@
     ]
   },
   "Exists": {
-    "url_segments": "api/exists/words/{id}",
+    "url_segments": "api/exists/dictionaries/{id}",
     "request_type": "GET",
     "description": "Check if instance exists",
     "required_fields": [
@@ -44,13 +44,13 @@
     ]
   },
   "Count": {
-    "url_segments": "api/count/words",
+    "url_segments": "api/count/dictionaries",
     "request_type": "GET",
     "description": "Count number of records",
     "enableParams": true
   },
   "Count By Post": {
-    "url_segments": "api/count/words",
+    "url_segments": "api/count/dictionaries",
     "request_type": "POST",
     "description": "Count number of records using POST request",
     "enableParams": true,
@@ -61,19 +61,19 @@
     }
   },
   "Create": {
-    "url_segments": "api/create/words",
+    "url_segments": "api/create/dictionaries",
     "request_type": "POST",
     "description": "Insert database record",
     "enableParams": true
   },
   "Insert Batch": {
-    "url_segments": "api/batch/words",
+    "url_segments": "api/batch/dictionaries",
     "request_type": "POST",
     "description": "Insert multiple records",
     "enableParams": true
   },
   "Update": {
-    "url_segments": "api/update/words/{id}",
+    "url_segments": "api/update/dictionaries/{id}",
     "request_type": "PUT",
     "description": "Update a database record",
     "enableParams": true,
@@ -85,13 +85,13 @@
     ]
   },
   "Destroy": {
-    "url_segments": "api/destroy/words",
+    "url_segments": "api/destroy/dictionaries",
     "request_type": "DELETE",
     "description": "Delete row or rows",
     "enableParams": true
   },
   "Delete One": {
-    "url_segments": "api/delete/words/{id}",
+    "url_segments": "api/delete/dictionaries/{id}",
     "request_type": "DELETE",
     "description": "Delete one row",
     "required_fields": [

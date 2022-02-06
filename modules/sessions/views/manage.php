@@ -41,7 +41,7 @@ if (count($rows)>0) { ?>
             <tr>
                 <td><?= $row->ip_address ?></td>
                 <td><?= $row->user_agent ?></td>
-                <td><?= $row->session_id ?></td>
+                <td><?= $row->token ?></td>
                 <td><?= $row->games_played ?></td>
                 <td><?= $row->games_won ?></td>
                 <td><?= $row->current_streak ?></td>

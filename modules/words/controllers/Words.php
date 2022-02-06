@@ -9,6 +9,11 @@ class Words extends Trongate
 
     function api()
     {
+        /* Filter out GET requests */
+        if ($_SERVER['REQUEST_METHOD'] == "GET") {
+            redirect('wordle');
+        }
+
         date_default_timezone_set('Europe/London');
 
         $this->_get_todays_word();
@@ -17,17 +22,28 @@ class Words extends Trongate
         $word = trim($body);
         $word = strip_tags($word);
 
-        $this->word = strtoupper($word);
-
         if (strlen($word) > 5 || strlen($word) < 5)
             return;
 
+        $this->word = strtoupper($word);
+
+        /* Validate word first */
+        if ($this->_word_not_valid())
+            return $this->_invalid_word();
+
+        /* Determine if answer is correct */
         if ($this->word == $this->todays_word) {
+            $this->module("sessions");
+            $this->sessions->_win_game();
             $data['answer'] = "correct";
         } else {
+            $this->module("sessions");
             $data['answer'] = "wrong";
+            if ($this->sessions->_lose_game())
+                $data['todays_word'] = $this->todays_word;
         }
 
+        /* Prepare game logic for the display */
         $this->_get_result();
 
         $data['result'] = $this->result;
@@ -36,17 +52,48 @@ class Words extends Trongate
         echo json_encode($data);
     }
 
+    function _word_not_valid()
+    {
+        $validate = $this->model->get_one_where("word", $this->word, "dictionaries");
+        return (!$validate);
+    }
+
+    function _invalid_word()
+    {
+        for ($i = 0; $i < 5; $i++) {
+            $result[] = ["style" => "wrong", "letter" => $this->word[$i]];
+        }
+        $data['answer'] = "invalid";
+        $data['result'] = $result;
+        $data['todays_word'] = $this->_get_todays_word();
+
+        $this->module("sessions");
+        $this->sessions->_reset_streak();
+
+        header('Content-Type: application/json');
+        echo json_encode($data);
+    }
+
     function _get_result()
     {
-        $result = [];
+        $result = [
+            ["style" => "missing", "letter" => $this->word[0]],
+            ["style" => "missing", "letter" => $this->word[1]],
+            ["style" => "missing", "letter" => $this->word[2]],
+            ["style" => "missing", "letter" => $this->word[3]],
+            ["style" => "missing", "letter" => $this->word[4]]
+        ];
 
+        /* One pass for the matches */
         for ($i = 0; $i < 5; $i++) {
             if ($this->_letter_matches($i))
-                $result[] = ["style" => "matches", "letter" => $this->word[$i]];
-            elseif ($this->_letter_is_present($i))
-                $result[] = ["style" => "present", "letter" => $this->word[$i]];
-            else
-                $result[] = ["style" => "missing", "letter" => $this->word[$i]];
+                $result[$i] = ["style" => "matches", "letter" => $this->word[$i]];
+        }
+
+        /* And a second pass for present letters */
+        for ($i = 0; $i < 5; $i++) {
+            if ($this->_letter_is_present($i))
+                $result[$i] = ["style" => "present", "letter" => $this->word[$i]];
         }
 
         $this->result = $result;
@@ -66,18 +113,54 @@ class Words extends Trongate
 
     function _letter_is_present($i)
     {
-        return strpos($this->todays_word, $this->word[$i]) !== false;
+        $match_pos = strpos($this->todays_word, $this->word[$i]);
+
+        if ($match_pos !== false) {
+            /* remove any found letters so we don't count them twice */
+            $this->todays_word[$match_pos] = " ";
+            return true;
+        }
     }
 
     function _get_todays_word()
     {
-        $date = strtotime('today midnight');
-        $result = $this->model->get_one_where("word_date", date("Y-m-d", $date));
+        // $date = strtotime('today midnight');
+        // $result = $this->model->get_one_where("word_date", date("Y-m-d", $date));
+        $result = false;
 
-        if (!$result)
-            die("Something went wrong");
+        if (!$result) {
+            /* Pick random word instead */
+            $this->module("sessions");
+            $token = $this->sessions->_create_id();
+
+            $sql = "SELECT w.id, w.word FROM words AS w
+                    INNER JOIN sessions AS s
+                    ON w.id = s.current_word_id
+                    WHERE s.token = '$token'";
+
+            $result = $this->model->query($sql, "object");
+
+            return $this->todays_word = strtoupper($result[0]->word);
+        }
 
         $this->todays_word = strtoupper($result->word);
+    }
+
+    /* Utility function don't use in production */
+    private function _check_word()
+    {
+        $words = $this->model->get();
+
+        foreach ($words as $word) {
+            $w = strtoupper($word->word);
+
+            $check = $this->model->get_one_where("word", $w, "dictionaries");
+
+            if (!$check) {
+                echo "$w<br>";
+                $this->model->delete($word->id);
+            }
+        }
     }
 
     function create()
@@ -102,8 +185,23 @@ class Words extends Trongate
             $data['cancel_url'] = BASE_URL . 'words/manage';
         }
 
+        $data['multiple_words'] = false;
         $data['form_location'] = BASE_URL . 'words/submit/' . $update_id;
         $data['view_file'] = 'create';
+
+        $this->template('admin', $data);
+    }
+
+    function create_words()
+    {
+        $this->module('trongate_security');
+        $this->trongate_security->_make_sure_allowed();
+
+        $data['headline'] = 'Add Multiple Words';
+        $data['cancel_url'] = BASE_URL . 'words/manage';
+        $data['form_location'] = BASE_URL . 'words/submit_words/';
+        $data['view_file'] = 'create_words';
+
         $this->template('admin', $data);
     }
 
@@ -121,7 +219,7 @@ class Words extends Trongate
             ORDER BY id';
             $all_rows = $this->model->query_bind($sql, $params, 'object');
         } else {
-            $data['headline'] = 'Manage Words';
+            $data['headline'] = 'Manage Word Of The Day';
             $all_rows = $this->model->get('id');
         }
 
@@ -219,6 +317,29 @@ class Words extends Trongate
                 $this->create();
             }
         }
+    }
+
+    function submit_words()
+    {
+        $this->module('trongate_security');
+        $this->trongate_security->_make_sure_allowed();
+
+        $words  = explode(" ", post('words'));
+        $values = "";
+
+        foreach ($words as $word) {
+            $values .= "('$word')";
+            $values .= ($word != end($words)) ? "," : ";";
+        }
+
+        $sql = "INSERT INTO words (word) VALUES $values";
+
+        $this->model->query($sql);
+
+        $flash_msg = 'Words have been added into the word list';
+
+        set_flashdata($flash_msg);
+        redirect('words/manage');
     }
 
     function submit_delete()

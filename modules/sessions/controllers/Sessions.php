@@ -1,19 +1,85 @@
 <?php
-class Sessions extends Trongate {
-
+class Sessions extends Trongate
+{
     private $default_limit = 20;
-    private $per_page_options = array(10, 20, 50, 100);    
+    private $per_page_options = array(10, 20, 50, 100);
 
     function _create_id()
     {
         $ip = $_SERVER['REMOTE_ADDR'];
         $user_agent = $_SERVER['HTTP_USER_AGENT'];
-        return sha1($ip.$user_agent);
+        return sha1($ip . $user_agent);
     }
 
-    
+    function _create_new_session()
+    {
+        $rand = rand(1, 660);
 
-    function create() {
+        $data['ip_address'] = $_SERVER['REMOTE_ADDR'];
+        $data['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
+        $data['token'] = $this->_create_id();
+        $data['games_played'] = 0;
+        $data['games_won'] = 0;
+        $data['current_streak'] = 0;
+        $data['max_streak'] = 0;
+        $data['current_round'] = 0;
+        $data['current_word_id'] = $rand;
+
+        $this->model->insert($data);
+
+        return $data['token'];
+    }
+
+    function _new_word($token)
+    {
+        $session = $this->model->get_one_where("token", $token);
+        $rand = rand(1, 660);
+
+        $data['games_played'] = $session->games_played + 1;
+        $data['token'] = $token;
+        $data['current_round'] = 0;
+        $data['current_word_id'] = $rand;
+
+        $this->model->update($session->id, $data);
+    }
+
+    function _win_game()
+    {
+        $token = $this->_create_id();
+        $session = $this->model->get_one_where("token", $token);
+
+        $data['games_won'] = $session->games_won + 1;
+        $data['current_streak'] = $session->current_streak + 1;
+
+        if ($data['current_streak'] > $session->max_streak)
+            $data['max_streak'] = $data['current_streak'];
+
+        $this->model->update($session->id, $data);
+    }
+
+    function _reset_streak()
+    {
+        $token = $this->_create_id();
+        $session = $this->model->get_one_where("token", $token);
+
+        $data['current_streak'] = 0;
+        $this->model->update($session->id, $data);
+    }
+
+    function _lose_game()
+    {
+        $token = $this->_create_id();
+        $session = $this->model->get_one_where("token", $token);
+
+        $data['current_round'] = $session->current_round + 1;
+
+        $this->model->update($session->id, $data);
+
+        return $data['current_round'] == 6;
+    }
+
+    function create()
+    {
         $this->module('trongate_security');
         $this->trongate_security->_make_sure_allowed();
 
@@ -28,32 +94,33 @@ class Sessions extends Trongate {
 
         if (is_numeric($update_id)) {
             $data['headline'] = 'Update Session Record';
-            $data['cancel_url'] = BASE_URL.'sessions/show/'.$update_id;
+            $data['cancel_url'] = BASE_URL . 'sessions/show/' . $update_id;
         } else {
             $data['headline'] = 'Create New Session Record';
-            $data['cancel_url'] = BASE_URL.'sessions/manage';
+            $data['cancel_url'] = BASE_URL . 'sessions/manage';
         }
 
-        $data['form_location'] = BASE_URL.'sessions/submit/'.$update_id;
+        $data['form_location'] = BASE_URL . 'sessions/submit/' . $update_id;
         $data['view_file'] = 'create';
         $this->template('admin', $data);
     }
 
-    function manage() {
+    function manage()
+    {
         $this->module('trongate_security');
         $this->trongate_security->_make_sure_allowed();
 
         if (segment(4) !== '') {
             $data['headline'] = 'Search Results';
             $searchphrase = trim($_GET['searchphrase']);
-            $params['ip_address'] = '%'.$searchphrase.'%';
-            $params['user_agent'] = '%'.$searchphrase.'%';
-            $params['session_id'] = '%'.$searchphrase.'%';
-            $params['current_streak'] = '%'.$searchphrase.'%';
+            $params['ip_address'] = '%' . $searchphrase . '%';
+            $params['user_agent'] = '%' . $searchphrase . '%';
+            $params['token'] = '%' . $searchphrase . '%';
+            $params['current_streak'] = '%' . $searchphrase . '%';
             $sql = 'select * from sessions
             WHERE ip_address LIKE :ip_address
             OR user_agent LIKE :user_agent
-            OR session_id LIKE :session_id
+            OR token LIKE :token
             OR current_streak LIKE :current_streak
             ORDER BY id';
             $all_rows = $this->model->query_bind($sql, $params, 'object');
@@ -78,7 +145,8 @@ class Sessions extends Trongate {
         $this->template('admin', $data);
     }
 
-    function show() {
+    function show()
+    {
         $this->module('trongate_security');
         $token = $this->trongate_security->_make_sure_allowed();
         $update_id = segment(3);
@@ -99,8 +167,9 @@ class Sessions extends Trongate {
             $this->template('admin', $data);
         }
     }
-    
-    function _reduce_rows($all_rows) {
+
+    function _reduce_rows($all_rows)
+    {
         $rows = [];
         $start_index = $this->_get_offset();
         $limit = $this->_get_limit();
@@ -109,7 +178,7 @@ class Sessions extends Trongate {
         $count = -1;
         foreach ($all_rows as $row) {
             $count++;
-            if (($count>=$start_index) && ($count<$end_index)) {
+            if (($count >= $start_index) && ($count < $end_index)) {
                 $rows[] = $row;
             }
         }
@@ -117,7 +186,8 @@ class Sessions extends Trongate {
         return $rows;
     }
 
-    function submit() {
+    function submit()
+    {
         $this->module('trongate_security');
         $this->trongate_security->_make_sure_allowed();
 
@@ -127,7 +197,7 @@ class Sessions extends Trongate {
 
             $this->validation_helper->set_rules('ip_address', 'IP Address', 'required|min_length[2]|max_length[255]');
             $this->validation_helper->set_rules('user_agent', 'User Agent', 'required|min_length[2]|max_length[255]');
-            $this->validation_helper->set_rules('session_id', 'Session ID', 'required|min_length[2]|max_length[255]');
+            $this->validation_helper->set_rules('token', 'Session ID', 'required|min_length[2]|max_length[255]');
             $this->validation_helper->set_rules('games_played', 'Games Played', 'required|max_length[11]|numeric|greater_than[0]|integer');
             $this->validation_helper->set_rules('games_won', 'Games Won', 'required|max_length[11]|numeric|greater_than[0]|integer');
             $this->validation_helper->set_rules('current_streak', 'Current Streak', 'required|min_length[2]|max_length[255]');
@@ -151,18 +221,16 @@ class Sessions extends Trongate {
                 }
 
                 set_flashdata($flash_msg);
-                redirect('sessions/show/'.$update_id);
-
+                redirect('sessions/show/' . $update_id);
             } else {
                 //form submission error
                 $this->create();
             }
-
         }
-
     }
 
-    function submit_delete() {
+    function submit_delete()
+    {
         $this->module('trongate_security');
         $this->trongate_security->_make_sure_allowed();
 
@@ -187,7 +255,8 @@ class Sessions extends Trongate {
         }
     }
 
-    function _get_limit() {
+    function _get_limit()
+    {
         if (isset($_SESSION['selected_per_page'])) {
             $limit = $this->per_page_options[$_SESSION['selected_per_page']];
         } else {
@@ -197,15 +266,16 @@ class Sessions extends Trongate {
         return $limit;
     }
 
-    function _get_offset() {
+    function _get_offset()
+    {
         $page_num = segment(3);
 
         if (!is_numeric($page_num)) {
             $page_num = 0;
         }
 
-        if ($page_num>1) {
-            $offset = ($page_num-1)*$this->_get_limit();
+        if ($page_num > 1) {
+            $offset = ($page_num - 1) * $this->_get_limit();
         } else {
             $offset = 0;
         }
@@ -213,7 +283,8 @@ class Sessions extends Trongate {
         return $offset;
     }
 
-    function _get_selected_per_page() {
+    function _get_selected_per_page()
+    {
         if (!isset($_SESSION['selected_per_page'])) {
             $selected_per_page = $this->per_page_options[1];
         } else {
@@ -223,7 +294,8 @@ class Sessions extends Trongate {
         return $selected_per_page;
     }
 
-    function set_per_page($selected_index) {
+    function set_per_page($selected_index)
+    {
         $this->module('trongate_security');
         $this->trongate_security->_make_sure_allowed();
 
@@ -235,7 +307,8 @@ class Sessions extends Trongate {
         redirect('sessions/manage');
     }
 
-    function _get_data_from_db($update_id) {
+    function _get_data_from_db($update_id)
+    {
         $record_obj = $this->model->get_where($update_id, 'sessions');
 
         if ($record_obj == false) {
@@ -243,19 +316,19 @@ class Sessions extends Trongate {
             die();
         } else {
             $data = (array) $record_obj;
-            return $data;        
+            return $data;
         }
     }
 
-    function _get_data_from_post() {
+    function _get_data_from_post()
+    {
         $data['ip_address'] = post('ip_address', true);
         $data['user_agent'] = post('user_agent', true);
-        $data['session_id'] = post('session_id', true);
+        $data['token'] = post('token', true);
         $data['games_played'] = post('games_played', true);
         $data['games_won'] = post('games_won', true);
         $data['current_streak'] = post('current_streak', true);
-        $data['max_streak'] = post('max_streak', true);        
+        $data['max_streak'] = post('max_streak', true);
         return $data;
     }
-
 }

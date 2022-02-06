@@ -19,8 +19,8 @@
 //The main config file
 define('BASE_URL', 'http://localhost/wordle/');
 define('ENV', 'dev');
-define('DEFAULT_MODULE', 'welcome');
-define('DEFAULT_CONTROLLER', 'Welcome');
+define('DEFAULT_MODULE', 'wordle');
+define('DEFAULT_CONTROLLER', 'Wordle');
 define('DEFAULT_METHOD', 'index');
 define('APPPATH', dirname(dirname(__FILE__)).'/');
 define('REQUEST_TYPE', $_SERVER['REQUEST_METHOD']);

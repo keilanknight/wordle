@@ -34,7 +34,7 @@
                 </div>
                 <div class="row">
                     <div>Session ID</div>
-                    <div><?= $session_id ?></div>
+                    <div><?= $token ?></div>
                 </div>
                 <div class="row">
                     <div>Games Played</div>

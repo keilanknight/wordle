@@ -1,5 +1,6 @@
 const game = {
   currentWord: "",
+  todaysWord: "",
   currentPos: 0,
   minPos: 0,
   maxPos: 5,
@@ -53,12 +54,18 @@ function endGame() {
   fadeout();
 }
 
+function reload() {
+  location.reload();
+}
+
 function fadeout() {
   let div = add("div");
+  div.id = "fadeout";
   div.classList.add("fadeout");
 
   setTimeout(() => {
     document.querySelector("body").appendChild(div);
+    _("fadeout").addEventListener("click", reload);
   }, 1500);
 }
 
@@ -69,16 +76,20 @@ function showBanner(txt) {
   banner.id = "banner";
   banner.classList.add("banner");
   banner.classList.add(color);
-  banner.innerText = txt;
 
-  /* display banner then timeout remove */
+  if (txt == "CORRECT!") {
+    banner.innerText = txt;
+  } else {
+    banner.innerHTML =
+      "<p style='font-size:16px'> \
+       The answer was " +
+      game.todaysWord +
+      "</p>";
+  }
+
   setTimeout(() => {
     document.querySelector("body").appendChild(banner);
   }, 1500);
-
-  setTimeout(() => {
-    _("banner").remove();
-  }, 5000);
 }
 
 function enter() {
@@ -105,6 +116,9 @@ function checkWord(word) {
 }
 
 function updateGame(res) {
+  if (res.todays_word) game.todaysWord = res.todays_word;
+  else game.todaysWord = "";
+
   /* Clear out previous answer */
   for (i = 0; i < 5; i++) {
     let ltr = _("ltr-" + game.lastPos);
@@ -125,7 +139,9 @@ function updateGame(res) {
       if (r.style) ltr.style = ltr.classList.add(r.style);
     }, i * 300);
 
-    /* Update the buttons */
+    /* Update the buttons, unless answer is not valid word */
+    if (r.style == "wrong") continue;
+
     setTimeout(() => {
       if (!r.style) {
         _(r.letter).className = "";
@@ -140,7 +156,11 @@ function updateGame(res) {
   if (res.answer == "correct") {
     game.win = true;
     showBanner("CORRECT!");
-    endGame();
+    return endGame();
+  }
+
+  if (res.answer == "invalid") {
+    return endGame();
   }
 
   if (game.currentPos == 30) endGame();

@@ -12,7 +12,7 @@
         echo form_label('User Agent');
         echo form_input('user_agent', $user_agent, array("placeholder" => "Enter User Agent"));
         echo form_label('Session ID');
-        echo form_input('session_id', $session_id, array("placeholder" => "Enter Session ID"));
+        echo form_input('token', $token, array("placeholder" => "Enter Token"));
         echo form_label('Games Played');
         echo form_number('games_played', $games_played, array("placeholder" => "Enter Games Played"));
         echo form_label('Games Won');

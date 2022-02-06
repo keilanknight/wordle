@@ -1,7 +1,8 @@
 <h1><?= $headline ?></h1>
 <?php
 flashdata();
-echo '<p>'.anchor('words/create', 'Create New Word Record', array("class" => "button")).'</p>'; 
+echo '<p>'.anchor('words/create', 'Create New Word Record', array("class" => "button")); 
+echo anchor('words/create_words', 'Add Multiple Words', array("class" => "button")).'</p>'; 
 echo Pagination::display($pagination_data);
 if (count($rows)>0) { ?>
     <table id="results-tbl">
