@@ -1,6 +1,7 @@
 <?php
 class Sessions extends Trongate
 {
+    private $number_of_words = 2315;
     private $default_limit = 20;
     private $per_page_options = array(10, 20, 50, 100);
 
@@ -13,7 +14,7 @@ class Sessions extends Trongate
 
     function _create_new_session()
     {
-        $rand = rand(1, 660);
+        $rand = rand(1, $this->number_of_words);
 
         $data['ip_address'] = $_SERVER['REMOTE_ADDR'];
         $data['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
@@ -33,7 +34,7 @@ class Sessions extends Trongate
     function _new_word($token)
     {
         $session = $this->model->get_one_where("token", $token);
-        $rand = rand(1, 660);
+        $rand = rand(1, $this->number_of_words);
 
         $data['games_played'] = $session->games_played + 1;
         $data['token'] = $token;

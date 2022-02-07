@@ -63,6 +63,7 @@ class Words extends Trongate
         for ($i = 0; $i < 5; $i++) {
             $result[] = ["style" => "wrong", "letter" => $this->word[$i]];
         }
+
         $data['answer'] = "invalid";
         $data['result'] = $result;
         $data['todays_word'] = $this->_get_todays_word();
@@ -76,13 +77,9 @@ class Words extends Trongate
 
     function _get_result()
     {
-        $result = [
-            ["style" => "missing", "letter" => $this->word[0]],
-            ["style" => "missing", "letter" => $this->word[1]],
-            ["style" => "missing", "letter" => $this->word[2]],
-            ["style" => "missing", "letter" => $this->word[3]],
-            ["style" => "missing", "letter" => $this->word[4]]
-        ];
+        for ($i = 0; $i < 5; $i++) {
+            $result[] = ["style" => "missing", "letter" => $this->word[$i]];
+        }
 
         /* One pass for the matches */
         for ($i = 0; $i < 5; $i++) {
@@ -113,6 +110,10 @@ class Words extends Trongate
 
     function _letter_is_present($i)
     {
+        /* Check we haven't already matched this letter */
+        if ($this->todays_word[$i] == " ")
+            return false;
+
         $match_pos = strpos($this->todays_word, $this->word[$i]);
 
         if ($match_pos !== false) {
@@ -120,6 +121,8 @@ class Words extends Trongate
             $this->todays_word[$match_pos] = " ";
             return true;
         }
+
+        return false;
     }
 
     function _get_todays_word()
@@ -144,23 +147,6 @@ class Words extends Trongate
         }
 
         $this->todays_word = strtoupper($result->word);
-    }
-
-    /* Utility function don't use in production */
-    private function _check_word()
-    {
-        $words = $this->model->get();
-
-        foreach ($words as $word) {
-            $w = strtoupper($word->word);
-
-            $check = $this->model->get_one_where("word", $w, "dictionaries");
-
-            if (!$check) {
-                echo "$w<br>";
-                $this->model->delete($word->id);
-            }
-        }
     }
 
     function create()
