@@ -4,6 +4,24 @@ class Sessions extends Trongate
     private $number_of_words = 2315;
     private $default_limit = 20;
     private $per_page_options = array(10, 20, 50, 100);
+    public  $session = null;
+
+    function __construct($module_name)
+    {
+        parent::__construct($module_name);
+
+        /* Construct user token based on IP and useragent */
+        $token = $this->_create_id();
+        $session = $this->model->get_one_where("token", $token);
+
+        /* If no existing session, create a new one */
+        if (!$session) {
+            $this->_create_new_session();
+            $session = $this->model->get_one_where("token", $token);
+        }
+
+        $this->session = $session;
+    }
 
     function _create_id()
     {
@@ -31,50 +49,46 @@ class Sessions extends Trongate
         return $data['token'];
     }
 
-    function _new_word($token)
+    function _update_last_call()
     {
-        $session = $this->model->get_one_where("token", $token);
+        $data['last_call'] = date("Y-m-d H:i:s", strtotime("now"));
+        $this->model->update($this->session->id, $data);
+    }
+
+    function _new_word()
+    {
         $rand = rand(1, $this->number_of_words);
 
-        $data['games_played'] = $session->games_played + 1;
-        $data['token'] = $token;
+        $data['games_played'] = $this->session->games_played + 1;
+        $data['token'] = $this->session->token;
         $data['current_round'] = 0;
         $data['current_word_id'] = $rand;
 
-        $this->model->update($session->id, $data);
+        $this->model->update($this->session->id, $data);
     }
 
     function _win_game()
     {
-        $token = $this->_create_id();
-        $session = $this->model->get_one_where("token", $token);
+        $data['games_won'] = $this->session->games_won + 1;
+        $data['current_streak'] = $this->session->current_streak + 1;
 
-        $data['games_won'] = $session->games_won + 1;
-        $data['current_streak'] = $session->current_streak + 1;
-
-        if ($data['current_streak'] > $session->max_streak)
+        if ($data['current_streak'] > $this->session->max_streak)
             $data['max_streak'] = $data['current_streak'];
 
-        $this->model->update($session->id, $data);
+        $this->model->update($this->session->id, $data);
     }
 
     function _reset_streak()
     {
-        $token = $this->_create_id();
-        $session = $this->model->get_one_where("token", $token);
-
         $data['current_streak'] = 0;
-        $this->model->update($session->id, $data);
+        $this->model->update($this->session->id, $data);
     }
 
     function _lose_game()
     {
-        $token = $this->_create_id();
-        $session = $this->model->get_one_where("token", $token);
+        $data['current_round'] = $this->session->current_round + 1;
 
-        $data['current_round'] = $session->current_round + 1;
-
-        $this->model->update($session->id, $data);
+        $this->model->update($this->session->id, $data);
 
         return $data['current_round'] == 6;
     }
@@ -199,10 +213,10 @@ class Sessions extends Trongate
             $this->validation_helper->set_rules('ip_address', 'IP Address', 'required|min_length[2]|max_length[255]');
             $this->validation_helper->set_rules('user_agent', 'User Agent', 'required|min_length[2]|max_length[255]');
             $this->validation_helper->set_rules('token', 'Session ID', 'required|min_length[2]|max_length[255]');
-            $this->validation_helper->set_rules('games_played', 'Games Played', 'required|max_length[11]|numeric|greater_than[0]|integer');
-            $this->validation_helper->set_rules('games_won', 'Games Won', 'required|max_length[11]|numeric|greater_than[0]|integer');
-            $this->validation_helper->set_rules('current_streak', 'Current Streak', 'required|min_length[2]|max_length[255]');
-            $this->validation_helper->set_rules('max_streak', 'Max Streak', 'required|max_length[11]|numeric|greater_than[0]|integer');
+            $this->validation_helper->set_rules('games_played', 'Games Played', 'required|numeric|integer');
+            $this->validation_helper->set_rules('games_won', 'Games Won', 'required|numeric|integer');
+            $this->validation_helper->set_rules('current_streak', 'Current Streak', 'required|numeric|integer');
+            $this->validation_helper->set_rules('max_streak', 'Max Streak', 'required|max_length[11]|numeric|integer');
 
             $result = $this->validation_helper->run();
 

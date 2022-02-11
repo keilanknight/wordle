@@ -39,8 +39,11 @@ class Words extends Trongate
         } else {
             $this->module("sessions");
             $data['answer'] = "wrong";
-            if ($this->sessions->_lose_game())
-                $data['todays_word'] = $this->todays_word;
+            if ($this->sessions->_lose_game()) {
+				$this->sessions->_reset_streak();
+				$data['todays_word'] = $this->todays_word;
+			}
+                
         }
 
         /* Prepare game logic for the display */
@@ -66,7 +69,7 @@ class Words extends Trongate
 
         $data['answer'] = "invalid";
         $data['result'] = $result;
-        $data['todays_word'] = $this->_get_todays_word();
+        $data['todays_word'] = $this->todays_word;
 
         $this->module("sessions");
         $this->sessions->_reset_streak();
@@ -89,6 +92,10 @@ class Words extends Trongate
 
         /* And a second pass for present letters */
         for ($i = 0; $i < 5; $i++) {
+            /* Skip if we already placed this letter */
+            if($this->todays_word[$i] == " ")
+                continue;
+
             if ($this->_letter_is_present($i))
                 $result[$i] = ["style" => "present", "letter" => $this->word[$i]];
         }
@@ -110,15 +117,15 @@ class Words extends Trongate
 
     function _letter_is_present($i)
     {
-        /* Check we haven't already matched this letter */
-        if ($this->todays_word[$i] == " ")
-            return false;
-
         $match_pos = strpos($this->todays_word, $this->word[$i]);
 
+        /* explicit checking as 0, the integer, could be a valid value! */
         if ($match_pos !== false) {
             /* remove any found letters so we don't count them twice */
-            $this->todays_word[$match_pos] = " ";
+            /* BUGFIX: Using spaces here was causing all sorts of issues, so
+                       found letters get removed, matched letters get #
+                       and then everything works perfect! oops... */
+            $this->todays_word[$match_pos] = "#";
             return true;
         }
 
@@ -127,9 +134,14 @@ class Words extends Trongate
 
     function _get_todays_word()
     {
-        // $date = strtotime('today midnight');
-        // $result = $this->model->get_one_where("word_date", date("Y-m-d", $date));
-        $result = false;
+        /* You can either uncomment these first two lines and comment out the third line
+           which will play the game with just one word a day, if there is no word it will
+           pick a word at random. For now I've just overridden it to always be a random word
+           as this makes the game a bit more fun! */
+
+        // $date = strtotime('today midnight');                                         // 1
+        // $result = $this->model->get_one_where("word_date", date("Y-m-d", $date));    // 2
+        $result = false;                                                                // 3
 
         if (!$result) {
             /* Pick random word instead */

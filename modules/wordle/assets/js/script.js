@@ -49,7 +49,8 @@ function endGame() {
       e.disabled = true;
     });
 
-  if (!game.win) showBanner("GAME OVER!");
+  if (!game.win)
+    showBanner("GAME OVER!");
 
   fadeout();
 }
@@ -93,9 +94,11 @@ function showBanner(txt) {
 }
 
 function enter() {
-  if (game.currentPos != game.maxPos) return;
+  if (game.currentPos != game.maxPos)
+    return;
 
-  if (game.currentPos == 30) return checkWord(game.currentWord);
+  if (game.currentPos == 30)
+    return checkWord(game.currentWord);
 
   game.minPos += 5;
   game.maxPos += 5;
@@ -116,8 +119,10 @@ function checkWord(word) {
 }
 
 function updateGame(res) {
-  if (res.todays_word) game.todaysWord = res.todays_word;
-  else game.todaysWord = "";
+  if (res.todays_word)
+    game.todaysWord = res.todays_word;
+  else
+    game.todaysWord = "";
 
   /* Clear out previous answer */
   for (i = 0; i < 5; i++) {
@@ -136,11 +141,14 @@ function updateGame(res) {
 
     setTimeout(() => {
       ltr.innerText = r.letter;
-      if (r.style) ltr.style = ltr.classList.add(r.style);
+
+      if (r.style)
+        ltr.classList.add(r.style);
     }, i * 300);
 
     /* Update the buttons, unless answer is not valid word */
-    if (r.style == "wrong") continue;
+    if (r.style == "wrong")
+      continue;
 
     setTimeout(() => {
       if (!r.style) {
@@ -163,11 +171,13 @@ function updateGame(res) {
     return endGame();
   }
 
-  if (game.currentPos == 30) endGame();
+  if (game.currentPos == 30)
+    endGame();
 }
 
 function del() {
-  if (game.currentPos == game.minPos) return;
+  if (game.currentPos == game.minPos)
+    return;
 
   game.currentPos--;
 
@@ -177,7 +187,8 @@ function del() {
 }
 
 function letter(char) {
-  if (game.currentPos == game.maxPos) return;
+  if (game.currentPos == game.maxPos)
+    return;
 
   let letter = _("ltr-" + game.currentPos);
 

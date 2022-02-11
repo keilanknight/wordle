@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 07, 2022 at 06:11 PM
+-- Generation Time: Feb 11, 2022 at 11:29 AM
 -- Server version: 10.4.16-MariaDB
 -- PHP Version: 7.4.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `wordle`
+-- Database: `g1`
 --
 
 -- --------------------------------------------------------
@@ -12530,6 +12530,7 @@ CREATE TABLE `sessions` (
   `ip_address` varchar(255) DEFAULT NULL,
   `user_agent` varchar(255) DEFAULT NULL,
   `token` varchar(255) DEFAULT NULL,
+  `last_call` datetime DEFAULT NULL,
   `games_played` int(11) DEFAULT NULL,
   `games_won` int(11) DEFAULT NULL,
   `current_streak` int(11) DEFAULT NULL,
@@ -12537,6 +12538,13 @@ CREATE TABLE `sessions` (
   `current_round` int(11) DEFAULT NULL,
   `current_word_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `sessions`
+--
+
+INSERT INTO `sessions` (`id`, `ip_address`, `user_agent`, `token`, `last_call`, `games_played`, `games_won`, `current_streak`, `max_streak`, `current_round`, `current_word_id`) VALUES
+(1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0', 'cb2da3eb48097f70919544cd7b8fa8fe12d4b08d', NULL, 0, 0, 0, 0, 0, 1449);
 
 -- --------------------------------------------------------
 
@@ -12556,7 +12564,7 @@ CREATE TABLE `trongate_administrators` (
 --
 
 INSERT INTO `trongate_administrators` (`id`, `username`, `password`, `trongate_user_id`) VALUES
-(1, 'admin', '$2y$11$lGnRJvozv3KwKqz2SppLrOy1cGfO2t4XUXq5mF73K8S7rFGYAf7IC', 1);
+(1, 'admin', '$2y$11$ersx.5HuSIctLbWPv5G.yuziH9m/XrguDGY2LgVzLe4xiQ4HSRDgC', 1);
 
 -- --------------------------------------------------------
 
@@ -12593,7 +12601,7 @@ CREATE TABLE `trongate_tokens` (
 --
 
 INSERT INTO `trongate_tokens` (`id`, `token`, `user_id`, `expiry_date`, `code`) VALUES
-(8, 'hlKN7kUu_ysx1VTWpa_taJRgoRkt8Ocx', 1, 1644289535, '0');
+(11, 'ahOYlombV7qEVfZxf6bf6eZuapIwVExZ', 1, 1644661770, '0');
 
 -- --------------------------------------------------------
 
@@ -15031,7 +15039,7 @@ ALTER TABLE `dictionaries`
 -- AUTO_INCREMENT for table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `trongate_administrators`
@@ -15049,7 +15057,7 @@ ALTER TABLE `trongate_comments`
 -- AUTO_INCREMENT for table `trongate_tokens`
 --
 ALTER TABLE `trongate_tokens`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `trongate_users`

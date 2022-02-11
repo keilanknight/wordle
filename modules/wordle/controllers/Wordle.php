@@ -5,19 +5,14 @@ class Wordle extends Trongate
     {
         $this->module("sessions");
 
-        /* Construct user token based on IP and useragent */
-        $token = $this->sessions->_create_id();
+        /* Log the time of this request */
+        $this->sessions->_update_last_call();
 
-        $session = $this->model->get_one_where("token", $token, "sessions");
-
-        /* If no existing session, create a new one */
-        if (!$session)
-            $session = $this->sessions->_create_new_session();
-
-        $data['token'] = $token;
+        /* short hand reference to session */
+        $session = &$this->sessions->session;
 
         /* If view file is loaded screen has been refreshed so pick a new word */
-        $this->sessions->_new_word($token);
+        $this->sessions->_new_word();
 
         $data['games'] = $session->games_played;
         $data['won'] = $session->games_won;

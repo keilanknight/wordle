@@ -37,6 +37,10 @@
                     <div><?= $token ?></div>
                 </div>
                 <div class="row">
+                    <div>Last Call</div>
+                    <div><?= $last_call ?></div>
+                </div>
+                <div class="row">
                     <div>Games Played</div>
                     <div><?= $games_played ?></div>
                 </div>

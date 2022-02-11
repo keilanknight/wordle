@@ -26,7 +26,7 @@ if (count($rows)>0) { ?>
             <tr>
                 <th>IP Address</th>
                 <th>User Agent</th>
-                <th>Session ID</th>
+                <th>Last Call</th>
                 <th>Games Played</th>
                 <th>Games Won</th>
                 <th>Current Streak</th>
@@ -41,7 +41,7 @@ if (count($rows)>0) { ?>
             <tr>
                 <td><?= $row->ip_address ?></td>
                 <td><?= $row->user_agent ?></td>
-                <td><?= $row->token ?></td>
+                <td><?= $row->last_call ?></td>
                 <td><?= $row->games_played ?></td>
                 <td><?= $row->games_won ?></td>
                 <td><?= $row->current_streak ?></td>

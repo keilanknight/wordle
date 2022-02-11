@@ -3,6 +3,7 @@ body {
   margin: 0 auto;
   text-align: center;
   margin-top: -10px;
+  touch-action: manipulation;
 }
 
 .fadeout {
@@ -104,7 +105,7 @@ body {
   }
   button {
     min-height: 40px;
-    min-width: 32px;
+    min-width: 28px;
     padding: 10px;
     margin: 0px;
     font-size: 0.6em;
